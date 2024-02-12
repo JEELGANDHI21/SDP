@@ -6,7 +6,7 @@ require("./db/conn");
 const port = 8080;
 const session = require("express-session");
 const { putObject } = require("./s3");
-
+var jwt = require("jsonwebtoken");
 const passport = require("passport");
 const OAuth2Strategy = require("passport-google-oauth2").Strategy;
 const userdb = require("./model/userSchema");
@@ -104,7 +104,16 @@ app.get(
 
 app.get("/login/sucess", async (req, res) => {
   if (req.user) {
-    res.status(200).json({ message: "user Login", user: req.user });
+    const token = jwt.sign(
+      {
+        data: "foobar",
+      },
+      "secret",
+      { expiresIn: "1h" }
+    );
+    res
+      .status(200)
+      .json({ message: "user Login", user: req.user, token: token });
   } else {
     res.status(400).json({ message: "Not Authorized" });
   }
@@ -120,10 +129,18 @@ app.get("/logout", (req, res, next) => {
 });
 
 app.post("/add-product", (req, res) => {
-  const { name, price, category, productPath, studentId } = req.body;
+  const { name, price, category, productPath, description, studentId } =
+    req.body;
 
   console.log("Received data:", req.body);
-  const p = new products({ name, price, category, productPath, studentId });
+  const p = new products({
+    name,
+    price,
+    category,
+    productPath,
+    description,
+    studentId,
+  });
   p.save()
     .then(() => {
       res.send({ message: "Saved Successfully" });
@@ -133,14 +150,27 @@ app.post("/add-product", (req, res) => {
     });
 });
 
+app.get("/get-products", (req, res) => {
+  products
+    .find()
+    .then((result) => {
+      // console.log(result, "user data");
+      res.send({ products: result });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+});
+
 app.post("/api/upload", async (req, res) => {
   try {
     let { filename, contentType } = req.body;
     const currentDateTime = new Date().toISOString().replace(/[:.]/g, "-");
     filename = currentDateTime + "-" + filename;
     const url = await putObject(filename, contentType);
-    const objectUrl = `https://buynsellhub.s3.ap-south-1.amazonaws.com//uploads/user-uploads/${encodeURIComponent(filename)}`;
-
+    const objectUrl = `https://buynsellhub.s3.ap-south-1.amazonaws.com//uploads/user-uploads/${encodeURIComponent(
+      filename
+    )}`;
     res.json({ url, objectUrl });
   } catch (error) {
     console.error(error);

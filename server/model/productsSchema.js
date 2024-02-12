@@ -5,7 +5,9 @@ const productSchema = new mongoose.Schema({
   category: String,
   price: String,
   productPath: String, // Use responseData.objectUrl directly
+  description:String,
   studentId: String,
+  
 });
 
 const products = new mongoose.model("products", productSchema);

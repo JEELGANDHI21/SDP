@@ -14,38 +14,32 @@ const Headers = () => {
       });
 
       setUserdata(response.data.user);
-      console.log(userdata)
+      console.log(userdata);
     } catch (error) {
       console.log("error", error);
     }
   };
-
-  // logoout
-  // const logout = () => {
-  //   window.open("http://localhost:8080/logout", "_self");
-  // };
 
   useEffect(() => {
     getUser();
   }, []);
   return (
     <>
-    <header className="bg-gray-800 py-4 px-6 flex items-center justify-between">
-      <nav>
-        <div className="left flex items-center">
-          <h1 className="text-white text-2xl font-bold">BuyNSellHub</h1>
-        </div>
-        <div className="right flex items-center space-x-6">
-          <ul className="hidden md:flex">
-            
+      <header className="bg-gray-800 py-4 px-6 flex items-center justify-between">
+        <nav>
+          <div className="left flex items-center">
+            <h1 className="text-white text-2xl font-bold">BuyNSellHub</h1>
+          </div>
+          <div className="right flex items-center space-x-6">
+            <ul className="hidden md:flex">
               {Object?.keys(userdata)?.length > 0 ? (
                 <>
                   <li>
                     <NavLink to="/home">Home</NavLink>
                   </li>
                   <li>
-                  <NavLink to="/">Logout</NavLink>
-                  {/* <li onClick={logout}>Logout</li> */}
+                    <NavLink to="/">Logout</NavLink>
+                    {/* <li onClick={logout}>Logout</li> */}
                   </li>
                   <li>
                     <img
