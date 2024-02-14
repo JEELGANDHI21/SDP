@@ -7,6 +7,7 @@ import Error from "./Components/Error";
 import AddProduct from "./Components/AddProduct";
 import ProductDetail from "./Components/ProductDetail";
 import ViewProduct from "./Components/ViewProduct";
+import UserProfile from "./Components/userProfile";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/add-product" element={<AddProduct />} />
         <Route path="/view-product" element={<ViewProduct />} />
         <Route path="/product/:productId" element={<ProductDetail />} />
+        <Route path="/user-profile" element={<UserProfile />} />
         <Route path="*" element={<Error />} />
       </Routes>
     </>

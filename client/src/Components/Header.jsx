@@ -1,28 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import "./header.css";
 import { NavLink } from "react-router-dom";
-import axios from "axios";
+
+import { useSelector } from "react-redux";
 
 const Headers = () => {
-  const [userdata, setUserdata] = useState({});
-  console.log("response", userdata);
+  const user = useSelector((state) => state.user);
+  console.log("Header ", user);
 
-  const getUser = async () => {
-    try {
-      const response = await axios.get("http://localhost:8080/login/sucess", {
-        withCredentials: true,
-      });
-
-      setUserdata(response.data.user);
-      console.log(userdata);
-    } catch (error) {
-      console.log("error", error);
-    }
-  };
-
-  useEffect(() => {
-    getUser();
-  }, []);
   return (
     <>
       <header className="bg-gray-800 py-4 px-6 flex items-center justify-between">
@@ -32,7 +17,7 @@ const Headers = () => {
           </div>
           <div className="right flex items-center space-x-6">
             <ul className="hidden md:flex">
-              {Object?.keys(userdata)?.length > 0 ? (
+              {Object?.keys(user)?.length > 0 ? (
                 <>
                   <li>
                     <NavLink to="/home">Home</NavLink>
@@ -42,11 +27,13 @@ const Headers = () => {
                     {/* <li onClick={logout}>Logout</li> */}
                   </li>
                   <li>
-                    <img
-                      src={userdata?.image}
-                      style={{ width: "50px", borderRadius: "50%" }}
-                      alt=""
-                    />
+                    <a href="/user-profile">
+                      <img
+                        src={user?.image}
+                        style={{ width: "50px", borderRadius: "50%" }}
+                        alt=""
+                      />
+                    </a>
                   </li>
                 </>
               ) : (
