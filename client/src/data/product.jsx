@@ -13,13 +13,14 @@ const fetchProducts = async () => {
 const products = async () => {
   const fetchedProducts = await fetchProducts();
   return fetchedProducts.map((item, index) => ({
-    id: index + 1,  // Generate a simple unique identifier (replace this logic if needed)
+    id : item.product_id, // Generate a simple unique identifier (replace this logic if needed)
     name: item.name,
     category: item.category,
     price: item.price,
     productPath: item.productPath,
     description: item.description,
     studentId: item.studentId,
+    offers : item.offers || []
   }));
 };
 export default products;

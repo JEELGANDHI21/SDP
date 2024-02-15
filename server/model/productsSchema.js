@@ -1,15 +1,22 @@
 const mongoose = require("mongoose");
 
 const productSchema = new mongoose.Schema({
+  product_id: String,
   name: String,
   category: String,
   price: String,
-  productPath: String, // Use responseData.objectUrl directly
-  description:String,
+  productPath: String,
+  description: String,
   studentId: String,
-  
+  offers: [
+    {
+      userId: String, 
+      offerAmount: Number, 
+      date: { type: Date, default: Date.now },
+    }
+  ]
 });
 
-const products = new mongoose.model("products", productSchema);
+const Product = mongoose.model("Product", productSchema);
 
-module.exports = products;
+module.exports = Product;

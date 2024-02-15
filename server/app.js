@@ -11,6 +11,9 @@ const passport = require("passport");
 const OAuth2Strategy = require("passport-google-oauth2").Strategy;
 const userdb = require("./model/userSchema");
 const products = require("./model/productsSchema");
+const uuid = require("uuid");
+const mongoose = require("mongoose");
+const ObjectId = mongoose.Types.ObjectId;
 
 const clientid =
   "703656858870-8lvns28qtssot11raen3av7bs9tv24s9.apps.googleusercontent.com";
@@ -133,7 +136,10 @@ app.post("/add-product", (req, res) => {
     req.body;
 
   console.log("Received data:", req.body);
+  const product_id = uuid.v4();
+  // console.log(product_id);
   const p = new products({
+    product_id,
     name,
     price,
     category,
@@ -177,6 +183,36 @@ app.post("/api/upload", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+
+
+app.put("/api/products/updateOffer/:productId", async (req, res) => {
+  const productId = req.params.productId;
+  const { userOffer, userId } = req.body;
+
+  try {
+    const product = await products.findOne({ product_id: productId });
+
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    product.offers.push({
+      userId: userId,
+      offerAmount: userOffer,
+    });
+
+    const updatedProduct = await product.save();
+
+    return res.status(200).json(updatedProduct);
+  } catch (error) {
+    console.error("Error updating product offer:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
+
 
 app.listen(port, () => {
   console.log(`Server Started on ${port} `);

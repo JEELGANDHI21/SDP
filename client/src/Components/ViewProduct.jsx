@@ -9,10 +9,23 @@ const ViewProduct = () => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const fuse = new Fuse(productsList, {
     keys: ["name"],
     threshold: 0.3,
   });
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchProductsData = async () => {
+      const fetchedProducts = await products();
+      setProductsList(fetchedProducts);
+      setFilteredProducts(fetchedProducts);
+    };
+
+    fetchProductsData();
+  }, []);
 
   const handleSearch = (event) => {
     const query = event.target.value.toLowerCase();
@@ -26,17 +39,6 @@ const ViewProduct = () => {
     }
   };
 
-  const navigate = useNavigate();
-  useEffect(() => {
-    const fetchProductsData = async () => {
-      const fetchedProducts = await products();
-      setProductsList(fetchedProducts);
-      setFilteredProducts(fetchedProducts);
-    };
-
-    fetchProductsData();
-  }, []);
-
   const filterProductsByCategory = (category) => {
     if (category === "All") {
       setFilteredProducts(productsList);
@@ -47,25 +49,27 @@ const ViewProduct = () => {
       setFilteredProducts(filtered);
     }
   };
+
   const handleCategoryChange = (event) => {
     const category = event.target.value;
     setSelectedCategory(category);
     filterProductsByCategory(category);
   };
-  const handleBuyNow = (productId) => {
-    const selectedProduct = productsList.find(
-      (product) => product.id === productId
-    );
 
-    // Navigate to the product detail page with the product ID as a parameter
-    navigate(`/product/${productId}`, { state: { product: selectedProduct } });
+  const handleViewDetails = (productId) => {
+    const product = productsList.find((item) => item.id === productId);
+
+    if (product) {
+      setSelectedProduct(product);
+      navigate(`/product/${productId}`);
+    } else {
+      console.error(`Product with id ${productId} not found.`);
+    }
   };
 
   return (
     <div>
       <Headers />
-
-      {/* Category filter buttons */}
       <div className="flex justify-center my-4">
         <select
           value={selectedCategory}
@@ -91,7 +95,8 @@ const ViewProduct = () => {
         {filteredProducts.map((item) => (
           <div
             key={item.id}
-            className="max-w-md mx-auto overflow-hidden bg-white rounded-md shadow-md hover:shadow-lg">
+            className="max-w-md mx-auto overflow-hidden bg-white rounded-md shadow-md hover:shadow-lg"
+          >
             <img
               src={item.productPath}
               alt={item.name}
@@ -107,10 +112,12 @@ const ViewProduct = () => {
                 <p className="text-green-600 font-bold text-sm">
                   Price: {item.price}
                 </p>
+
                 <button
-                  onClick={() => handleBuyNow(item.id)}
-                  className="px-3 py-2 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-md focus:ring-4 focus:outline-none focus:ring-orange-300">
-                  View Product
+                  onClick={() => handleViewDetails(item.id)}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none"
+                >
+                  View Details
                 </button>
               </div>
             </div>

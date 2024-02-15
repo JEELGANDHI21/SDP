@@ -22,8 +22,7 @@ const Home = () => {
           localStorage.setItem("token", response.data.token);
         }
       }
-
-      // console.log(setLogin);
+      
       setUserdata(response.data.user);
       console.log("Userdata : ", userdata);
       dispatch(

@@ -6,6 +6,7 @@ import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./userData/store";
 import storage from "redux-persist/lib/storage";
+
 import { PersistGate } from "redux-persist/integration/react";
 import {
   persistStore,
@@ -35,11 +36,11 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <BrowserRouter>
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistStore(store)}>
-        <App />
-      </PersistGate>
-    </Provider>
+      <Provider store={store}>
+        <PersistGate loading={null} persistor={persistStore(store)}>
+          <App />
+        </PersistGate>
+      </Provider>
     </BrowserRouter>
   </React.StrictMode>
 );

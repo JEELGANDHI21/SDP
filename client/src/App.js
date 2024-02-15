@@ -12,7 +12,6 @@ import UserProfile from "./Components/userProfile";
 function App() {
   return (
     <>
-      {/* <Header /> */}
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />

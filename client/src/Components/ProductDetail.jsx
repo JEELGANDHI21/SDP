@@ -1,108 +1,93 @@
-import React, { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-// import { sendEmail } from "./sendEmail"; // Import your email sending service
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import products from "../data/product";
+import { useSelector } from "react-redux";
 
 const ProductDetail = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
+  const { productId } = useParams();
+  const [product, setProduct] = useState(null);
+  const [updatedPrice, setUpdatedPrice] = useState(null);
+  const user = useSelector((state) => state.user);
+  useEffect(() => {
+    const fetchProductDetails = async () => {
+      const productList = await products();
+      const selectedProduct = productList.find((item) => item.id === productId);
 
-  const { product } = location.state || {};
+      if (selectedProduct) {
+        setProduct(selectedProduct);
+        setUpdatedPrice(selectedProduct.price); // Initialize the slider value with the current price
+      } else {
+        console.error(`Product with id ${productId} not found.`);
+      }
+    };
 
-  const [isEditingPrice, setIsEditingPrice] = useState(false);
-  const [editedPrice, setEditedPrice] = useState(product?.price || "");
+    fetchProductDetails();
+  }, [productId]);
 
-  const handleEditPrice = () => {
-    setIsEditingPrice(true);
+  const handlePriceChange = (event) => {
+    setUpdatedPrice(parseFloat(event.target.value));
   };
 
-  const handleSavePrice = async (event) => {
-    event.preventDefault();
+  const handleUpdatePrice = async () => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/products/updateOffer/${productId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userOffer: updatedPrice,
+          userId: user.email,
+        }),
+      });
 
-    // Perform validation (optional)
-    if (!editedPrice || isNaN(editedPrice)) {
-      alert("Please enter a valid price.");
-      return;
+      if (response.ok) {
+        const updatedProduct = await response.json();
+        setProduct(updatedProduct);
+      } else {
+        console.error("Error updating product offer:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error updating product offer:", error);
     }
-
-    // Update price logic (use API call, state management, etc.)
-    // This snippet simulates an update:
-    const newPrice = parseFloat(editedPrice);
-    const updatedProduct = { ...product, price: newPrice };
-    console.log("Updated product:", updatedProduct);
-
-    // Redirect or display confirmation message
-    navigate("/home"); // Redirect to product list
-
-    // Optionally send email after update (consider security and user consent):
-    // if (window.confirm("Send email notification to user with ID " + product?.studentId + "?")) {
-    //   try {
-    //     await sendEmail({
-    //       to: product?.studentId, // Replace with valid email address
-    //       subject: "Product Price Update",
-    //       body: `The price of product "${product.name}" has been updated to ${newPrice}.`,
-    //     });
-    //     alert("Email sent successfully.");
-    //   } catch (error) {
-    //     console.error("Error sending email:", error);
-    //     alert("Failed to send email. Please check your email service configuration.");
-    //   }
-    // }
   };
 
-  const handleCancelEdit = () => {
-    setIsEditingPrice(false);
-    setEditedPrice(product?.price || ""); // Reset edited price
-  };
+  if (!product) {
+    return (
+      <div>
+        <h2>Product Not Found</h2>
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto my-8 p-4 bg-white shadow-lg rounded-lg">
-      {product ? (
-        <>
-          <h2 className="text-2xl font-semibold mb-4">{product.name}</h2>
-          <p className="text-gray-700 mb-4">{product.description}</p>
-          <p className="text-gray-600 mb-2">Category: {product.category}</p>
-          <p className="text-gray-600 mb-2">ID: {product.studentId}</p>
-          <p className="text-green-600 mb-2">
-            Price:{" "}
-            {isEditingPrice ? (
-              <form className="flex items-center" onSubmit={handleSavePrice}>
-                <input
-                  type="number"
-                  value={editedPrice}
-                  onChange={(e) => setEditedPrice(e.target.value)}
-                  className="w-20 p-2 border border-gray-300 rounded mr-2"
-                />
-                <button
-                  type="submit"
-                  className="bg-blue-500 text-white px-4 py-2 rounded"
-                >
-                  Save
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCancelEdit}
-                  className="bg-gray-300 text-gray-700 px-4 py-2 rounded ml-2"
-                >
-                  Cancel
-                </button>
-              </form>
-            ) : (
-              <span>
-                ${product.price}
-                <button
-                  onClick={handleEditPrice}
-                  className="bg-blue-500 text-white px-4 py-2 rounded ml-2"
-                >
-                  Edit
-                </button>
-              </span>
-            )}
+    <div className="flex items-center justify-center h-screen">
+      <div className="max-w-md p-4 flex">
+        <img src={product.productPath} alt={product.name} className="w-1/2 h-auto mr-4" />
+        <div className="w-1/2">
+          <h2 className="text-2xl font-bold mb-4">{product.name}</h2>
+          <p className="text-gray-700 text-sm mb-4">{product.description}</p>
+          <p className="text-gray-700 text-sm">
+            Category: {product.category} | ID: {product.studentId}
           </p>
-          <img className="mt-4" src={product.productPath} alt={product.name} />
-        </>
-      ) : (
-        <p className="text-red-500">No product details available.</p>
-      )}
+
+          <div className="flex items-center mb-4">
+            <label className="mr-2">Price:</label>
+            <input
+              type="range"
+              min="0"
+              max={product.price *3}
+              step="1" 
+              value={updatedPrice || product.price}
+              onChange={handlePriceChange}
+            />
+            <span className="ml-2">{updatedPrice || product.price}</span>
+          </div>
+          <button onClick={handleUpdatePrice} className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none">
+            Make Offer
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
