@@ -6,8 +6,8 @@ import Login from "./Components/Login";
 import Error from "./Components/Error";
 import AddProduct from "./Components/AddProduct";
 import ProductDetail from "./Components/ProductDetail";
-import ViewProduct from "./Components/ViewProduct";
 import UserProfile from "./Components/userProfile";
+import UserProductDetails from "./Components/UserProductDetails";
 
 function App() {
   return (
@@ -17,9 +17,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/home" element={<Home />} />
         <Route path="/add-product" element={<AddProduct />} />
-        <Route path="/view-product" element={<ViewProduct />} />
         <Route path="/product/:productId" element={<ProductDetail />} />
         <Route path="/user-profile" element={<UserProfile />} />
+        <Route path="/userproduct/:productId" element={<UserProductDetails/>} />
         <Route path="*" element={<Error />} />
       </Routes>
     </>

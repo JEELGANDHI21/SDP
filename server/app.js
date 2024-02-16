@@ -131,13 +131,29 @@ app.get("/logout", (req, res, next) => {
   });
 });
 
-app.post("/add-product", (req, res) => {
+app.post("/add-product", async (req, res) => {
   const { name, price, category, productPath, description, studentId } =
     req.body;
 
   console.log("Received data:", req.body);
   const product_id = uuid.v4();
-  // console.log(product_id);
+  try {
+    const user = await userdb.findOne({ email: studentId });
+
+    if (!user) {
+      return res.status(404).json({ error: "User Not Found" });
+    }
+
+    user.products.push({
+      product_id: product_id,
+      name: name,
+      price: price,
+    });
+    const updatedUser = await user.save();
+  } catch (error) {
+    console.error("Error updating product offer:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
   const p = new products({
     product_id,
     name,
@@ -184,11 +200,9 @@ app.post("/api/upload", async (req, res) => {
   }
 });
 
-
-
 app.put("/api/products/updateOffer/:productId", async (req, res) => {
   const productId = req.params.productId;
-  const { userOffer, userId } = req.body;
+  const { userOffer, userId, offerStatus } = req.body;
 
   try {
     const product = await products.findOne({ product_id: productId });
@@ -200,6 +214,7 @@ app.put("/api/products/updateOffer/:productId", async (req, res) => {
     product.offers.push({
       userId: userId,
       offerAmount: userOffer,
+      offerStatus: offerStatus,
     });
 
     const updatedProduct = await product.save();
@@ -211,8 +226,73 @@ app.put("/api/products/updateOffer/:productId", async (req, res) => {
   }
 });
 
+app.put("/api/products/acceptOffer/:productId/:offerId", async (req, res) => {
+  const { productId, offerId } = req.params;
+  const { offerStatus } = req.body;
 
+  try {
+    const product = await products.findOne({ product_id: productId });
 
+    if (!product) {
+      return res
+        .status(404)
+        .json({ error: `Product with id ${productId} not found.` });
+    }
+
+    const offerIndex = product.offers.findIndex(
+      (offer) => offer._id.toString() === offerId
+    );
+
+    if (offerIndex !== -1) {
+      product.offers[offerIndex].offerStatus = offerStatus;
+      await product.save();
+      return res
+        .status(200)
+        .json({ message: "Offer status updated successfully." });
+    } else {
+      return res.status(404).json({
+        error: `Offer with id ${offerId} not found for product ${productId}.`,
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+app.put("/api/products/rejectOffer/:productId/:offerId", async (req, res) => {
+  const { productId, offerId } = req.params;
+  const { offerStatus } = req.body;
+
+  try {
+    const product = await products.findOne({ product_id: productId });
+
+    if (!product) {
+      return res
+        .status(404)
+        .json({ error: `Product with id ${productId} not found.` });
+    }
+
+    const offerIndex = product.offers.findIndex(
+      (offer) => offer._id.toString() === offerId
+    );
+
+    if (offerIndex !== -1) {
+      product.offers[offerIndex].offerStatus = offerStatus;
+      await product.save();
+      return res
+        .status(200)
+        .json({ message: "Offer status updated successfully." });
+    } else {
+      return res.status(404).json({
+        error: `Offer with id ${offerId} not found for product ${productId}.`,
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
 app.listen(port, () => {
   console.log(`Server Started on ${port} `);

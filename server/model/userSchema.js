@@ -6,6 +6,13 @@ const userSchema = new mongoose.Schema(
     displayName: String,
     email: String,
     image: String,
+    products: [
+      {
+        product_id: String,
+        name: String,
+        price: String,
+      },
+    ],
   },
   { timestamps: true }
 );

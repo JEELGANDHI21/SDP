@@ -1,8 +1,41 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-body{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.shadow-btn {
+  box-shadow: 5px 3px 10px #888888;
+}
+
+.my-custom-header {
+  border-radius: 5px;
+}
+
+.bg-image {
+  background-image: url("./Components/images/IMG_5813.JPG");
+  background-size: cover;
+}
+
+.gradient-bg {
+  background: linear-gradient(90deg, black 20%, orangered 85%, white 100%);
+}
+
+.gradient-bg nav a {
+  color: white;
+  padding: 0.5rem 1rem;
+
+  border-radius: 0.25rem;
+
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.gradient-bg nav a:hover {
+  /* Change background color on hover */
+  background-color: rgba(255, 255, 255, 0.1); /* Lighter background color */
+  /* Change text color on hover */
+  color: black; /* New text color */
 }

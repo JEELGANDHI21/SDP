@@ -107,13 +107,14 @@ const AddProduct = () => {
   };
 
   return (
-    <>
+    
+     <>
       <Headers />
       <div className="container mx-auto p-4">
-        <h2 className="text-2xl font-bold mb-4">Add New Product</h2>
+        <h2 className="text-2xl font-bold mb-4 text-center">Add New Product</h2>
         <form onSubmit={handleSubmit} className="max-w-md mx-auto">
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-600">
+            <label className="block text-sm font-medium text-black">
               Name:
             </label>
             <input
@@ -121,34 +122,36 @@ const AddProduct = () => {
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md"
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-600">
+            <label className="block text-sm font-medium text-black">
               Category:
             </label>
             <select
               name="category"
               value={formData.category}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md"
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             >
               <option value="" disabled>
                 Choose a category
               </option>
-              <option value="Books">Books</option>
+              <option value="Books">Textbooks</option>
               <option value="Notes">Notes</option>
+              <option value="Mechanical Products">Electronics Products</option>
               <option value="Mechanical Products">Mechanical Products</option>
               <option value="ICs">ICs</option>
+              <option value="ICs">Others</option>
             </select>
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-600">
+            <label className="block text-sm font-medium text-black">
               Price:
             </label>
             <input
@@ -156,13 +159,13 @@ const AddProduct = () => {
               name="price"
               value={formData.price}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md"
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-600">
+            <label className="block text-sm font-medium text-black">
               Short Description:
             </label>
             <textarea
@@ -170,14 +173,14 @@ const AddProduct = () => {
               name="description"
               value={formData.description}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md resize-none"
+              className="w-full px-3 py-2 border rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
               rows="4"
               placeholder="Enter a short description..."
             ></textarea>
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-600">
+            <label className="block text-sm font-medium text-black">
               Product Path (File Location):
             </label>
             <input
@@ -194,7 +197,7 @@ const AddProduct = () => {
                   }
                 }
               }}
-              className="w-full px-3 py-2 border rounded-md"
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               accept=".jpg, .jpeg, .png"
               required
             />
@@ -202,13 +205,14 @@ const AddProduct = () => {
 
           <button
             type="submit"
-            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+            className="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-black shadow-btn focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             Add Product
           </button>
         </form>
       </div>
     </>
+    
   );
 };
 

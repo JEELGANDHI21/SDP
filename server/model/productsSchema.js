@@ -13,6 +13,7 @@ const productSchema = new mongoose.Schema({
       userId: String, 
       offerAmount: Number, 
       date: { type: Date, default: Date.now },
+      offerStatus: String,
     }
   ]
 });
