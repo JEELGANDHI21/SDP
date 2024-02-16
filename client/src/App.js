@@ -12,6 +12,7 @@ import UserProductDetails from "./Components/UserProductDetails";
 function App() {
   return (
     <>
+    //Routes
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
