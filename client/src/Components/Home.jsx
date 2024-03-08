@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import axios from "axios";
 
 import Headers from "./Header";
 
@@ -25,6 +23,10 @@ const Home = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+    }
     const fetchProductsData = async () => {
       const fetchedProducts = await products();
       setProductsList(fetchedProducts);
@@ -78,26 +80,26 @@ const Home = () => {
     <>
       <Headers style={{ padding: "0.5rem 1 rem" }} />
       <div className="container mx-auto">
-        <div className="flex justify-center my-4">
+        <div className="flex justify-center my-4 mb-10">
           <select
             value={selectedCategory}
             onChange={handleCategoryChange}
-            className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mr-2"
+            className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-600 mr-2"
           >
-          <option value={"All"}>All</option>
-            <option value="Books">Textbooks</option>
+            <option value={"All"}>All</option>
+            <option value="Textbooks">Textbooks</option>
             <option value="Notes">Notes</option>
-            <option value="Mechanical Products">Electronics Products</option>
+            <option value="Electronics Products">Electronics Products</option>
             <option value="Mechanical Products">Mechanical Products</option>
             <option value="ICs">ICs</option>
-            <option value="ICs">Others</option>
+            <option value="Others">Others</option>
           </select>
           <input
             type="text"
             value={searchQuery}
             onChange={handleSearch}
             placeholder="Search by product name..."
-            className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-600"
           />
         </div>
 
@@ -105,23 +107,24 @@ const Home = () => {
           {filteredProducts.map((item) => (
             <div
               key={item.id}
-              className="max-w-md mx-auto bg-white rounded-md shadow-md hover:shadow-lg"
-              style={{ width: "300px", height: "400px" }} // Fixed size
+              className="max-w-md mx-auto bg-white rounded-md shadow-md hover:shadow-lg mb-6"
+              style={{ width: "85%", height: "95%" }}
             >
               <img
                 src={item.productPath}
                 alt={item.name}
-                className="w-full h-48 object-cover rounded-t-md"
-                style={{ height: "200px" }} // Adjust the height of the image
+                className="w-full object-cover rounded-t-md"
+                style={{ height: "200px" }}
               />
               <div className="p-4">
                 <h3 className="text-xl font-bold mb-2">{item.name}</h3>
-                <p className="text-gray-700 text-sm mb-4">{item.description}</p>
-                <p className="text-gray-700 text-sm">
-                  Category: {item.category} | ID: {item.studentId}
+
+                <p className="text-gray-700 text-base">
+                  Category: {item.category}
                 </p>
+                <p className="text-gray-700 text-base">ID: {item.studentId}</p>
                 <div className="flex items-center justify-between mt-4">
-                  <p className="text-green-600 font-bold text-sm">
+                  <p className="text-green-600 font-bold text-lg">
                     Price: {item.price}
                   </p>
                   <button

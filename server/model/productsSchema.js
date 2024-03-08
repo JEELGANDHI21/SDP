@@ -8,12 +8,14 @@ const productSchema = new mongoose.Schema({
   productPath: String,
   description: String,
   studentId: String,
+  
   offers: [
     {
       userId: String, 
       offerAmount: Number, 
       date: { type: Date, default: Date.now },
       offerStatus: String,
+      otp:String,
     }
   ]
 });

@@ -14,6 +14,8 @@ const products = require("./model/productsSchema");
 const uuid = require("uuid");
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
+const nodemailer = require("nodemailer");
+const soldProduct = require("./model/soldproductSchema");
 
 const clientid =
   "703656858870-8lvns28qtssot11raen3av7bs9tv24s9.apps.googleusercontent.com";
@@ -215,6 +217,7 @@ app.put("/api/products/updateOffer/:productId", async (req, res) => {
       userId: userId,
       offerAmount: userOffer,
       offerStatus: offerStatus,
+      otp: "undefined",
     });
 
     const updatedProduct = await product.save();
@@ -228,7 +231,7 @@ app.put("/api/products/updateOffer/:productId", async (req, res) => {
 
 app.put("/api/products/acceptOffer/:productId/:offerId", async (req, res) => {
   const { productId, offerId } = req.params;
-  const { offerStatus } = req.body;
+  const { offerStatus, otp } = req.body;
 
   try {
     const product = await products.findOne({ product_id: productId });
@@ -245,6 +248,7 @@ app.put("/api/products/acceptOffer/:productId/:offerId", async (req, res) => {
 
     if (offerIndex !== -1) {
       product.offers[offerIndex].offerStatus = offerStatus;
+      product.offers[offerIndex].otp = otp;
       await product.save();
       return res
         .status(200)
@@ -291,6 +295,86 @@ app.put("/api/products/rejectOffer/:productId/:offerId", async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "jdgandhi4585@gmail.com",
+    pass: "rbcm cndl ltjm dctu",
+  },
+});
+app.post("/api/send-email", (req, res) => {
+  const { from, to, subject, body, image, productinfo } = req.body;
+
+  const mailOptions = {
+    from: from,
+    to: to,
+    subject: subject,
+    html: `
+    <p>${productinfo}</p>
+    <img src="${image}" alt="Product Image" />
+    <p>${body}</p>`,
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      return res.status(500).json({ error: "Error sending email" });
+    }
+    res.json({ message: "Email sent successfully", info });
+  });
+});
+
+app.post("/add-soldproduct", async (req, res) => {
+  const {
+    id,
+    name,
+    category,
+    price,
+    productPath,
+    description,
+    ownerId,
+    acceptedId,
+    acceptedAmount,
+  } = req.body;
+
+  console.log("Received data:", req.body);
+
+  const p = new soldProduct({
+    id,
+    name,
+    category,
+    price,
+    productPath,
+    description,
+    ownerId,
+    acceptedId,
+    acceptedAmount,
+  });
+  p.save()
+    .then(() => {
+      res.send({ message: "Saved Successfully" });
+    })
+    .catch(() => {
+      res.status(500).send({ message: "Server Error" });
+    });
+});
+
+app.delete("/delete-product/:productId", async (req, res) => {
+  const productId = req.params.productId;
+
+  try {
+    const result = await products.deleteOne({ product_id: productId });
+
+    if (result.deletedCount > 0) {
+      res.status(200).json({ message: "Product deleted successfully!" });
+    } else {
+      res.status(404).json({ error: "Product not found" });
+    }
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 

@@ -8,6 +8,7 @@ const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [updatedPrice, setUpdatedPrice] = useState(null);
   const [hasMadeOffer, setHasMadeOffer] = useState(false);
+  const [notification, setNotification] = useState(null);
   const user = useSelector((state) => state.user);
 
   useEffect(() => {
@@ -31,14 +32,31 @@ const ProductDetail = () => {
 
   const handlePriceChange = (event) => {
     const enteredPrice = parseFloat(event.target.value);
-
     const clampedPrice = Math.min(Math.max(enteredPrice, 0), product.price * 3);
-
     setUpdatedPrice(clampedPrice);
+  };
+  const showNotification = (message) => {
+    setNotification(message);
+    setTimeout(() => {
+      setNotification(null);
+    }, 4000);
   };
 
   const handleUpdatePrice = async () => {
     try {
+      const hasOfferInStorage = localStorage.getItem(
+        `offer_${user.email}_${productId}`
+      );
+
+      if (hasOfferInStorage) {
+        console.log("Offer already made for this product.");
+        return;
+      }
+
+      if (user.email === product.studentId) {
+        showNotification("You cannot make an offer on your own product.");
+        return;
+      }
       const response = await fetch(
         `http://localhost:8080/api/products/updateOffer/${productId}`,
         {
@@ -74,32 +92,25 @@ const ProductDetail = () => {
       </div>
     );
   }
-
-  if (!product) {
-    return (
-      <div>
-        <h2>Product Not Found</h2>
-      </div>
-    );
-  }
-
   return (
     <div className="flex items-center justify-center h-screen">
-      <div className="max-w-md p-4 flex">
+      <div className="max-w-5xl p-8 flex bg-white rounded-xl shadow-lg">
         <img
           src={product.productPath}
           alt={product.name}
-          className="w-1/2 h-auto mr-4"
+          className="w-80 h-auto mr-8"
         />
         <div className="w-1/2">
-          <h2 className="text-2xl font-bold mb-4">{product.name}</h2>
-          <p className="text-gray-700 text-sm mb-4">{product.description}</p>
-          <p className="text-gray-700 text-sm">
-            Category: {product.category} | ID: {product.studentId}
-          </p>
+          <h2 className="text-3xl font-bold mb-6">{product.name}</h2>
+          <p className="text-xl font-bold">Description : </p>
+          <p className=" mb-2">{product.description}</p>
+          <p className="text-black text-lg font-semibold">Category : </p>
+          <p className=" mb-2">{product.category}</p>
+          <p className=" font-bold"> ID :</p>
+          <p className=" mb-2"> {product.studentId}</p>
 
-          <div className="flex items-center mb-4">
-            <label className="mr-2">Price:</label>
+          <div className="flex items-center mb-6">
+            <label className="mr-4 text-lg">Price:</label>
             <input
               type="number"
               min="0"
@@ -107,21 +118,29 @@ const ProductDetail = () => {
               step="1"
               value={updatedPrice || product.price}
               onChange={handlePriceChange}
-              className="w-16 border rounded-md p-1"
+              className="w-24 border rounded-md p-2 text-lg"
             />
-            <span className="ml-2">{updatedPrice || product.price} ₹</span>
+            <span className="ml-4 text-lg">
+              {updatedPrice || product.price} ₹         
+            </span>
           </div>
           <button
             onClick={handleUpdatePrice}
             disabled={hasMadeOffer}
-            className={`px-4 py-2 ${
-              hasMadeOffer ? "bg-gray-400" : "bg-blue-500"
+            className={`px-6 py-3 shadow-btn ${
+              hasMadeOffer ? "bg-gray-400" : "bg-orange-600"
             } text-white rounded-md focus:outline-none ${
               hasMadeOffer ? "cursor-not-allowed" : ""
-            }`}
+            } text-lg`}
           >
             {hasMadeOffer ? "Offer Made" : "Make Offer"}
           </button>
+
+          {notification && (
+            <div className="notification absolute top-4 right-4 bg-orange-600 text-white px-4 py-2 rounded-md">
+              {notification}
+            </div>
+          )}
         </div>
       </div>
     </div>

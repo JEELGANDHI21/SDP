@@ -141,12 +141,12 @@ const AddProduct = () => {
               <option value="" disabled>
                 Choose a category
               </option>
-              <option value="Books">Textbooks</option>
+              <option value="Textbooks">Textbooks</option>
               <option value="Notes">Notes</option>
-              <option value="Mechanical Products">Electronics Products</option>
+              <option value="Electronics Products">Electronics Products</option>
               <option value="Mechanical Products">Mechanical Products</option>
               <option value="ICs">ICs</option>
-              <option value="ICs">Others</option>
+              <option value="Others">Others</option>
             </select>
           </div>
 

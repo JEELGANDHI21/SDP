@@ -12,7 +12,6 @@ import UserProductDetails from "./Components/UserProductDetails";
 function App() {
   return (
     <>
-    //Routes
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
@@ -20,7 +19,10 @@ function App() {
         <Route path="/add-product" element={<AddProduct />} />
         <Route path="/product/:productId" element={<ProductDetail />} />
         <Route path="/user-profile" element={<UserProfile />} />
-        <Route path="/userproduct/:productId" element={<UserProductDetails/>} />
+        <Route
+          path="/userproduct/:productId"
+          element={<UserProductDetails />}
+        />
         <Route path="*" element={<Error />} />
       </Routes>
     </>
