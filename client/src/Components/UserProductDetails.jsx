@@ -15,7 +15,34 @@ const UserProductDetails = () => {
   const [additionalInfo, setAdditionalInfo] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
+  const [expiryDate, setExpiryDate] = useState("Not available");
+
+  useEffect(() => {
+    // Check if productDetails and acceptedOfferId are available
+    if (productDetails && acceptedOfferId) {
+      const offer = productDetails.offers.find(
+        (offer) => offer._id === acceptedOfferId && offer.otp
+      );
+
+      if (offer && offer.otp && offer.otp.expires) {
+        const expiryDate = new Date(offer.otp.expires).toLocaleString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "numeric",
+          second: "numeric",
+          hour12: false,
+        });
+        setExpiryDate(expiryDate);
+      } else {
+        setExpiryDate("Not available");
+      }
+    }
+  }, [productDetails, acceptedOfferId]);
+
   const navigate = useNavigate();
+
 
   const generateOTP = () => {
     const generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
@@ -95,6 +122,7 @@ const UserProductDetails = () => {
         (offer) => offer._id === offerId
       )?.offerAmount;
 
+
       const response = await fetch(
         `http://localhost:8080/api/products/acceptOffer/${productId}/${offerId}`,
         {
@@ -111,6 +139,9 @@ const UserProductDetails = () => {
 
       if (response.ok) {
         setAcceptedOfferId(offerId);
+
+
+
         alert("Offer accepted successfully!");
         await fetch("http://localhost:8080/api/send-email", {
           method: "POST",
@@ -134,6 +165,7 @@ const UserProductDetails = () => {
     } catch (error) {
       console.error("Error accepting offer:", error);
     }
+
   };
 
   const handleRejectOffer = async (offerId) => {
@@ -167,21 +199,68 @@ const UserProductDetails = () => {
   const handleInputChange = (event) => {
     setAdditionalInfo(event.target.value);
   };
+
+
   const handleVerifyOTP = async () => {
-    const acceptedid = productDetails.offers.find(
+    const acceptedOffer = productDetails.offers.find(
       (offer) => offer._id === acceptedOfferId
-    )?.userId;
+    );
 
-    const otptoverify = productDetails.offers.find(
-      (offer) => offer._id === acceptedOfferId
-    )?.otp;
+    if (!acceptedOffer) {
+      console.error("No accepted offer found.");
+      return;
+    }
 
-    const amount = productDetails.offers.find(
-      (offer) => offer._id === acceptedOfferId
-    )?.offerAmount;
+    const otptoverify = acceptedOffer?.otp;
 
-    if (additionalInfo === otptoverify) {
+    const currentTimestamp = new Date();
+
+    if (!otptoverify || new Date(otptoverify.expires) < currentTimestamp) {
+      console.error("OTP has expired or does not exist.");
+      try {
+        const response = await axios.put(
+          `http://localhost:8080/api/products/setOfferStatus/${productId}/${acceptedOffer._id}`,
+          {
+            offerStatus: "pending",
+          }
+        );
+
+        if (response.status === 200) {
+          console.log("Offer status set to pending successfully.");
+
+
+          const deleteOTPres = await axios.delete(
+            `http://localhost:8080/api/products/deleteOTP/${productId}/${acceptedOffer._id}`
+          );
+
+          if (deleteOTPres.status === 200) {
+            console.log("Expired OTP deleted successfully.");
+          } else {
+            console.error("Error deleting expired OTP:", deleteOTPres.statusText);
+          }
+        } else {
+          console.error("Error setting offer status to pending:", response.statusText);
+        }
+      } catch (error) {
+        console.error("Error setting offer status to pending:", error);
+      }
+
+      window.alert("OTP is expired. The offer has been cancelled.");
+      window.location.reload();
+      return;
+    }
+
+
+    const userEnteredOTP = additionalInfo;
+    const generatedOTP = otptoverify.value;
+
+    if (userEnteredOTP === generatedOTP) {
       console.log("OTP verified successfully!");
+
+
+
+      const acceptedid = acceptedOffer.userId;
+      const amount = acceptedOffer.offerAmount;
 
       const data = {
         id: productDetails.id,
@@ -211,7 +290,7 @@ const UserProductDetails = () => {
 
             if (deleteResponse.status === 200) {
               console.log("Product deleted successfully!");
-              alert("Product sold sucessfully!! Thank You For Using BuyNSellHub 😊");
+              alert("Product sold successfully!! Thank You For Using BuyNSellHub 😊");
               navigate("/home");
             } else {
               console.error("Error deleting product:", deleteResponse.data);
@@ -229,6 +308,7 @@ const UserProductDetails = () => {
       console.error("Invalid OTP. Please try again.");
     }
   };
+
 
   return (
     <div className="flex justify-center items-center h-screen">
@@ -258,15 +338,8 @@ const UserProductDetails = () => {
                         }
                       </p>
                       <p className="text-gray-500 mb-2 font-bold">
-                        Price :
-                        {
-                          productDetails.offers.find(
-                            (offer) => offer._id === acceptedOfferId
-                          )?.offerAmount
-                        }{" "}
-                        ₹
-                      </p>
-
+                        Expiry: {expiryDate}
+                      </p>  
                       <input
                         type="text"
                         placeholder="Enter Validation OTP"

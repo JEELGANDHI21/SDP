@@ -45,7 +45,7 @@ const Headers = () => {
     getUser();
   }, []);
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    // localStorage.removeItem("token");
 
     setUserdata({});
     setToken("");

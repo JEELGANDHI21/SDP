@@ -25,11 +25,13 @@ const allowedDomain = "ddu.ac.in";
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: ["http://localhost:3000", "http://localhost:3005"],
     methods: "GET,POST,PUT,DELETE",
     credentials: true,
   })
 );
+
+
 
 app.use(express.json());
 
@@ -204,7 +206,7 @@ app.post("/api/upload", async (req, res) => {
 
 app.put("/api/products/updateOffer/:productId", async (req, res) => {
   const productId = req.params.productId;
-  const { userOffer, userId, offerStatus } = req.body;
+  const { userOffer, userId, offerStatus, otp } = req.body;
 
   try {
     const product = await products.findOne({ product_id: productId });
@@ -217,7 +219,7 @@ app.put("/api/products/updateOffer/:productId", async (req, res) => {
       userId: userId,
       offerAmount: userOffer,
       offerStatus: offerStatus,
-      otp: "undefined",
+
     });
 
     const updatedProduct = await product.save();
@@ -228,6 +230,7 @@ app.put("/api/products/updateOffer/:productId", async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 
 app.put("/api/products/acceptOffer/:productId/:offerId", async (req, res) => {
   const { productId, offerId } = req.params;
@@ -247,8 +250,17 @@ app.put("/api/products/acceptOffer/:productId/:offerId", async (req, res) => {
     );
 
     if (offerIndex !== -1) {
-      product.offers[offerIndex].offerStatus = offerStatus;
-      product.offers[offerIndex].otp = otp;
+
+      if (product.offers[offerIndex].otp && product.offers[offerIndex].otp.expires < new Date()) {
+        product.offers[offerIndex].otp = undefined;
+      } else {
+        product.offers[offerIndex].offerStatus = offerStatus;
+        product.offers[offerIndex].otp = {
+          value: otp,
+          expires: new Date(Date.now() + 60 * 1000), // Expiry set to 1 minute
+        };
+      }
+
       await product.save();
       return res
         .status(200)
@@ -263,6 +275,7 @@ app.put("/api/products/acceptOffer/:productId/:offerId", async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 
 app.put("/api/products/rejectOffer/:productId/:offerId", async (req, res) => {
   const { productId, offerId } = req.params;
@@ -375,6 +388,100 @@ app.delete("/delete-product/:productId", async (req, res) => {
   } catch (error) {
     console.error("Error deleting product:", error);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+app.put("/api/products/setOfferStatus/:productId/:offerId", async (req, res) => {
+  const { productId, offerId } = req.params;
+
+  try {
+    const product = await products.findOne({ product_id: productId });
+
+    if (!product) {
+      return res.status(404).json({ error: `Product with id ${productId} not found.` });
+    }
+
+    const offerIndex = product.offers.findIndex(offer => offer._id.toString() === offerId);
+
+    if (offerIndex !== -1) {
+      const offer = product.offers[offerIndex];
+
+      // Check if OTP exists and has expired
+      if (offer.otp && offer.otp.expires < new Date()) {
+        product.offers[offerIndex].offerStatus = "pending";
+        await product.save();
+        return res.status(200).json({ message: "Offer status set to pending successfully." });
+      } else {
+        return res.status(400).json({ error: "OTP is either not expired or does not exist." });
+      }
+    } else {
+      return res.status(404).json({ error: `Offer with id ${offerId} not found for product ${productId}.` });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+app.delete('/api/products/deleteOTP/:productId/:offerId', async (req, res) => {
+  const { productId, offerId } = req.params;
+
+  try {
+
+    const product = await products.findOne({ product_id: productId });
+
+    if (!product) {
+      return res.status(404).json({ error: `Product with id ${productId} not found.` });
+    }
+
+    const offerIndex = product.offers.findIndex(offer => offer._id.toString() === offerId);
+
+    if (offerIndex !== -1) {
+
+      product.offers[offerIndex].otp = undefined;
+
+      await product.save();
+
+      return res.status(200).json({ message: 'Expired OTP deleted successfully.' });
+    } else {
+      return res.status(404).json({
+        error: `Offer with id ${offerId} not found for product ${productId}.`,
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.get('/api/users', async (req, res) => {
+  try {
+    const users = await userdb.find();
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.get('/api/soldproducts', async (req, res) => {
+  try {
+    const sp = await soldProduct.find();
+    res.json(sp);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.delete('/api/users/:userId', async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const deletedUser = await userdb.findByIdAndDelete(userId);
+    if (!deletedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.status(200).json({ message: 'User deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 
