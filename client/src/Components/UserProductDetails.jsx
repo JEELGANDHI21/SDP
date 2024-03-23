@@ -305,6 +305,7 @@ const UserProductDetails = () => {
         console.error("Error parsing server response:", error);
       }
     } else {
+      alert("Your OTP is Invalid")
       console.error("Invalid OTP. Please try again.");
     }
   };

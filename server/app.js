@@ -18,8 +18,8 @@ const nodemailer = require("nodemailer");
 const soldProduct = require("./model/soldproductSchema");
 
 const clientid =
-  "703656858870-8lvns28qtssot11raen3av7bs9tv24s9.apps.googleusercontent.com";
-const clientsecret = "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";
+process.env.CLIENT_ID;
+const clientsecret = process.env.CLIENT_SECRET;
 
 const allowedDomain = "ddu.ac.in";
 
